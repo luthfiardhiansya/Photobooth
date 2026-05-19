@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photobooth Pro - Fixed Ratio</title>
+    <style>
+
+        body {
+            background: #F5EBE0;
+            color: #4E342E;
+            margin: 0;
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .pose-counter {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: #6D4C41;
+            margin-bottom: 15px;
+            background: white;
+            padding: 8px 30px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .cam-box {
+            width: 100%;
+            max-width: 450px;
+            aspect-ratio: 4/3;
+            background: #000;
+            border-radius: 20px;
+            position: relative;
+            overflow: hidden;
+            border: 6px solid white;
+        }
+
+        #videoFeed,
+        #resultCanvas {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #videoFeed {
+            transform: scaleX(-1);
+        }
+
+        #resultCanvas {
+            display: none;
+            background: white;
+        }
+
+        #countdown {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80px;
+            color: white;
+            font-weight: 900;
+            z-index: 5;
+            text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            display: none;
+        }
+
+        #flash {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: none;
+            z-index: 10;
+        }
+
+        .filter-container {
+            width: 100%;
+            max-width: 450px;
+            margin-top: 20px;
+            overflow-x: auto;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            width: max-content;
+        }
+
+        .filter-item {
+            cursor: pointer;
+            text-align: center;
+            font-size: 10px;
+        }
+
+        .filter-dot {
+            width: 50px;
+            height: 50px;
+            border-radius: 10px;
+            border: 2px solid white;
+            margin-bottom: 5px;
+        }
+
+        .active .filter-dot {
+            border-color: #6D4C41;
+            transform: scale(1.1);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        button {
+            padding: 15px;
+            border-radius: 50px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        .btn-capture {
+            background: #6D4C41;
+            color: white;
+        }
+
+        .btn-download {
+            background: #6D4C41;
+            color: white;
+            display: none;
+        }
+
+        .btn-retake {
+            background: transparent;
+            border: 2px solid #6D4C41;
+            color: #6D4C41;
+            display: none;
+        }
+
+        #loading {
+            display: none;
+            font-weight: bold;
+            margin: 10px;
+            color: #6D4C41;
+        }
+
+        .pixelated {
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+            transform: scale(0.2);
+            width: 500% !important;
+            height: 500% !important;
+            position: absolute;
+            top: -200%;
+            left: -200%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="pose-counter" id="poseDisplay">0/0</div>
+
+    <div class="cam-box" id="camBox">
+        <div id="flash"></div>
+        <div id="countdown">3</div>
+        <div id="filterOverlay"
+            style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; display:none; mix-blend-mode: screen; opacity: 0.5; background: linear-gradient(45deg, #405de6, #833ab4, #fd1d1d, #fcaf45);">
+        </div>
+
+        <video id="videoFeed" autoplay playsinline></video>
+        <canvas id="resultCanvas"></canvas>
+    </div>
+    <div id="loading">✨ Memproses Gambar...</div>
+
+    <div class="filter-container" id="filterContainer">
+        <div class="filter-bar">
+            <div class="filter-item active" onclick="setFilter('none', this)">
+                <div class="filter-dot" style="background:#ddd"></div>
+                <span>Normal</span>
+            </div>
+
+            <div class="filter-item" onclick="setFilter('grayscale(100%)', this)">
+                <div class="filter-dot" style="background:#333"></div>
+                <span>B&W</span>
+            </div>
+
+            <div class="filter-item" onclick="setFilter('sepia(0.5) contrast(1.2)', this)">
+                <div class="filter-dot" style="background:#d2b48c"></div>
+                <span>Vintage</span>
+            </div>
+
+            <div class="filter-item" onclick="setFilter('saturate(1.8) contrast(1.1)', this)">
+                <div class="filter-dot" style="background:#e9967a"></div>
+                <span>Vivid</span>
+            </div>
+
+            <div class="filter-item" onclick="setFilter('sunset', this)">
+                <div class="filter-dot"
+                    style="background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);">
+                </div>
+                <span>Rio de janeiro</span>
+            </div>
+
+            <div class="filter-item" onclick="setFilter('lo-res', this)">
+                <div class="filter-dot"
+                    style="background: repeating-conic-gradient(#555 0% 25%, #888 0% 50%) 50% / 10px 10px;"></div>
+                <span>Lo-Res</span>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-capture" id="startBtn" onclick="startSequence()">Mulai Foto</button>
+        <button class="btn-download" id="dlBtn" onclick="downloadImage()">Download</button>
+        <button class="btn-retake" id="reBtn" onclick="location.reload()">Ulangi</button>
+    </div>
+
+    <script>
+        const video = document.getElementById('videoFeed');
+        const canvas = document.getElementById('resultCanvas');
+        const ctx = canvas.getContext('2d');
+        const countdownEl = document.getElementById('countdown');
+        const startBtn = document.getElementById('startBtn');
+        const loading = document.getElementById('loading');
+
+        let photos = [];
+        let currentFilter = 'none';
+
+        const selectedLayout = localStorage.getItem('selectedLayout') || 'layoutA';
+        const camBox = document.getElementById('camBox');
+
+        let maxPoses = 3;
+        const frameImg = new Image();
+
+        if (selectedLayout === 'layoutB') {
+            maxPoses = 4;
+            frameImg.src = 'frames/2.png';
+        } else if (selectedLayout === 'layoutC') {
+            maxPoses = 3;
+            frameImg.src = 'frames/3.png';
+        } else if (selectedLayout === 'layoutD') {
+            maxPoses = 3;
+            frameImg.src = 'frames/4.png'; 
+        } else if (selectedLayout === 'layoutE') {
+            maxPoses = 3;
+            frameImg.src = 'frames/5.png'; 
+        } else if (selectedLayout === 'layoutF') {
+            maxPoses = 2;
+            frameImg.src = 'frames/6.png';
+            camBox.style.aspectRatio = "640/788";
+        } else if (selectedLayout === 'layoutG') {
+            maxPoses = 2;
+            frameImg.src = 'frames/7.png';
+            camBox.style.aspectRatio = "640/788";
+        } else if (selectedLayout === 'layoutI') {
+            maxPoses = 2;
+            frameImg.src = 'frames/7.png';
+            camBox.style.aspectRatio = "640/788";
+        } else {
+            maxPoses = 3;
+            frameImg.src = 'frames/1(2).png';
+        }
+
+        document.getElementById('poseDisplay').innerText = `0/${maxPoses}`;
+
+        async function initCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 1280, height: 960 }, audio: false
+                });
+                video.srcObject = stream;
+            } catch (err) { alert("Kamera error!"); }
+        }
+
+        function setFilter(filter, el) {
+            const overlay = document.getElementById('filterOverlay');
+
+            video.style.filter = 'none';
+            video.style.imageRendering = 'auto'; 
+            overlay.style.display = 'none';
+
+            if (filter === 'sunset') {
+                video.style.filter = 'contrast(1.2) saturate(1.5)';
+                overlay.style.display = 'block';
+                currentFilter = 'sunset';
+            }
+            else if (filter === 'lo-res') {
+                video.style.imageRendering = 'pixelated';
+                video.style.filter = 'contrast(1.1) brightness(1.1)';
+                currentFilter = 'lo-res';
+            }
+            else {
+                currentFilter = filter;
+                video.style.filter = filter;
+            }
+
+            document.querySelectorAll('.filter-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function startSequence() {
+            startBtn.style.display = 'none';
+            document.getElementById('filterContainer').style.display = 'none';
+            photos = [];
+            for (let i = 1; i <= maxPoses; i++) {
+                document.getElementById('poseDisplay').innerText = `${i}/${maxPoses}`;
+                await runCountdown(3);
+                capture();
+                await new Promise(r => setTimeout(r, 600));
+            }
+            showResult();
+        }
+
+        function runCountdown(sec) {
+            return new Promise(resolve => {
+                let count = sec;
+                countdownEl.style.display = 'block';
+                countdownEl.innerText = count;
+                const timer = setInterval(() => {
+                    count--;
+                    if (count <= 0) { clearInterval(timer); countdownEl.style.display = 'none'; resolve(); }
+                    else { countdownEl.innerText = count; }
+                }, 1000);
+            });
+        }
+
+        function capture() {
+            const flash = document.getElementById('flash');
+            flash.style.display = 'block';
+            setTimeout(() => flash.style.display = 'none', 100);
+
+            const vW = video.videoWidth;
+            const vH = video.videoHeight;
+
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = vW;
+            tempCanvas.height = vH;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            if (currentFilter === 'lo-res') {
+                const scale = 10000;
+                const sw = Math.floor(vW * scale);
+                const sh = Math.floor(vH * scale);
+
+                const smallCanvas = document.createElement('canvas');
+                smallCanvas.width = sw;
+                smallCanvas.height = sh;
+                const smallCtx = smallCanvas.getContext('2d');
+
+                smallCtx.translate(sw, 0);
+                smallCtx.scale(-1, 1);
+                smallCtx.drawImage(video, 0, 0, sw, sh);
+
+                tempCtx.imageSmoothingEnabled = false;
+                tempCtx.drawImage(smallCanvas, 0, 0, sw, sh, 0, 0, vW, vH);
+
+                tempCtx.filter = 'contrast(1.2) brightness(1.1)';
+            }
+            else {
+                tempCtx.filter = (currentFilter === 'sunset') ? 'contrast(1.2) saturate(1.5)' : currentFilter;
+                tempCtx.save();
+                tempCtx.translate(vW, 0);
+                tempCtx.scale(-1, 1);
+                tempCtx.drawImage(video, 0, 0, vW, vH);
+                tempCtx.restore();
+
+                if (currentFilter === 'sunset') {
+                    tempCtx.globalAlpha = 0.4;
+                    tempCtx.globalCompositeOperation = 'screen';
+                    const grad = tempCtx.createLinearGradient(0, 0, 0, vH);
+                    grad.addColorStop(0, '#405de6');
+                    grad.addColorStop(0.5, '#833ab4');
+                    grad.addColorStop(1, '#fd1d1d');
+                    tempCtx.fillStyle = grad;
+                    tempCtx.fillRect(0, 0, vW, vH);
+                }
+            }
+
+            photos.push(tempCanvas.toDataURL('image/jpeg', 0.9));
+        }
+        async function showResult() {
+            loading.style.display = 'block';
+            video.style.display = 'none';
+            canvas.style.display = 'block';
+
+            await frameImg.decode();
+
+            if (selectedLayout === 'layoutG') {
+                canvas.width = 1080; 
+                canvas.height = 1920;
+            } else {
+                canvas.width = 800;   
+                canvas.height = 2400;
+            }
+
+            let cfg;
+            if (selectedLayout === 'layoutB') {
+                cfg = { photoW: 710, photoH: 447, startX: 45, startY: 54, gap: 90 };
+            } else if (selectedLayout === 'layoutC') {
+                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
+            } else if (selectedLayout === 'layoutD') {
+                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
+            } else if (selectedLayout === 'layoutE') {
+                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
+            } else if (selectedLayout === 'layoutF') {
+                cfg = { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 };
+            } else if (selectedLayout === 'layoutI') {
+                cfg = { count: 2, photoW: 720, photoH: 560, startX: 40, startY: 70, gap: 120};
+            } else {
+                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
+            }
+
+            for (let i = 0; i < photos.length; i++) {
+                const img = new Image();
+                img.src = photos[i];
+                await new Promise(resolve => {
+                    img.onload = () => {
+                        const yPos = cfg.startY + (i * (cfg.photoH + cfg.gap));
+
+                        let sourceWidth = img.width;
+                        let sourceHeight = img.height;
+                        let targetRatio = cfg.photoW / cfg.photoH;
+                        let sourceRatio = sourceWidth / sourceHeight;
+
+                        let sX, sY, sW, sH;
+
+                        if (sourceRatio > targetRatio) {
+                            sW = sourceHeight * targetRatio;
+                            sH = sourceHeight;
+                            sX = (sourceWidth - sW) / 2;
+                            sY = 0;
+                        } else {
+                            sW = sourceWidth;
+                            sH = sourceWidth / targetRatio;
+                            sX = 0;
+                            sY = (sourceHeight - sH) / 2;
+                        }
+
+                        ctx.drawImage(img, sX, sY, sW, sH, cfg.startX, yPos, cfg.photoW, cfg.photoH);
+                        resolve();
+                    }
+                });
+            }
+
+            ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
+            loading.style.display = 'none';
+            document.getElementById('dlBtn').style.display = 'block';
+            document.getElementById('reBtn').style.display = 'block';
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = `photobooth_${Date.now()}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        }
+
+        window.onload = initCamera;
+    </script>
+</body>
+
+</html>

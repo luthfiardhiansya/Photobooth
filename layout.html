@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SELECT YOUR VIBE — TIMELESS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@700&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0e0e0e;
+            color: #fff;
+            font-family: 'Space Grotesk', sans-serif;
+            padding: 20px;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Archivo Black', sans-serif;
+            font-size: clamp(2rem, 8vw, 4rem);
+            text-align: center;
+            text-transform: uppercase;
+            margin: 40px 0;
+            letter-spacing: -2px;
+            mix-blend-mode: difference;
+        }
+
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 40px;
+            position: sticky;
+            top: 20px;
+            z-index: 1000;
+            width: 100%;
+        }
+
+        .tab-btn {
+            background: #fff;
+            border: 3px solid #000;
+            color: #000;
+            padding: 12px 25px;
+            font-family: 'Archivo Black', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 6px 6px 0px #ff4d00;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            background: #ff4d00;
+            color: #fff;
+            transform: translate(3px, 3px);
+            box-shadow: 0px 0px 0px #000;
+        }
+
+        .layout-section {
+            display: none;
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            animation: slideUp 0.5s cubic-bezier(0.2, 1, 0.2, 1) both;
+        }
+
+        .layout-section.active {
+            display: block;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 30px;
+            padding: 20px 0 100px 0;
+            justify-items: center;
+        }
+
+        .frame-card {
+            background: #fff;
+            padding: 12px;
+            border: 4px solid #fff;
+            cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            box-shadow: 10px 10px 0px #ff4d00;
+            width: 100%;
+            max-width: 260px;
+        }
+
+        .frame-card:hover {
+            transform: scale(1.05) rotate(-2deg);
+            box-shadow: 15px 15px 0px #fff;
+            z-index: 10;
+        }
+
+        .frame-card img {
+            width: 100%;
+            display: block;
+            filter: grayscale(100%);
+            transition: 0.3s;
+            background: #f0f0f0;
+            object-fit: contain;
+        }
+
+        .frame-card:hover img {
+            filter: grayscale(0);
+        }
+
+        .frame-card p {
+            font-family: 'Archivo Black', sans-serif;
+            color: #000;
+            text-transform: uppercase;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            text-align: center;
+        }
+
+        .selected {
+            background: #ff4d00 !important;
+            border-color: #fff !important;
+            transform: scale(1.05);
+        }
+
+        .selected p {
+            color: #fff;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 2.2rem;
+            }
+
+            .tab-btn {
+                padding: 10px 15px;
+                font-size: 0.75rem;
+            }
+
+            .grid-container {
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+
+            .frame-card {
+                padding: 8px;
+                max-width: 100%;
+            }
+
+            .frame-card p {
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>SELECT FRAME</h1>
+
+    <div class="tab-container">
+        <button class="tab-btn active" onclick="switchTab('strip', this)">CLASSIC STRIP</button>
+    </div>
+
+    <div id="strip" class="layout-section active">
+        <div class="grid-container">
+            <div class="frame-card" onclick="selectLayout('layoutA', this)">
+                <img src="frames/1(2).png" alt="Frame 1">
+                <p>WHITE STRIP</p>
+            </div>
+            <div class="frame-card" onclick="selectLayout('layoutB', this)">
+                <img src="frames/2.png" alt="Frame 2">
+                <p>BLACK CORE</p>
+            </div>
+            <div class="frame-card" onclick="selectLayout('layoutC', this)">
+                <img src="frames/3.png" alt="Frame 3">
+                <p>RETRO VIBE</p>
+            </div>
+            <div class="frame-card" onclick="selectLayout('layoutD', this)">
+                <img src="frames/4.png" alt="Frame 4">
+                <p>VINTAGE</p>
+            </div>
+            <div class="frame-card" onclick="selectLayout('layoutE', this)">
+                <img src="frames/5.png" alt="Frame 5">
+                <p>PASTEL</p>
+            </div>
+            <div class="frame-card" onclick="selectLayout('layoutF', this)">
+                <img src="frames/6.png" alt="Frame 6">
+                <p>CUTE-2P</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.layout-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btn.classList.add('active');
+        }
+
+        function selectLayout(layoutName, element) {
+            localStorage.setItem('selectedLayout', layoutName);
+
+            document.querySelectorAll('.frame-card').forEach(c => c.classList.remove('selected'));
+            element.classList.add('selected');
+
+            if (navigator.vibrate) navigator.vibrate(40);
+
+            setTimeout(() => {
+                window.location.href = 'camera.html';
+            }, 500);
+        }
+    </script>
+</body>
+
+</html>

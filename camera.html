@@ -263,13 +263,12 @@
             frameImg.src = 'frames/6.png';
             camBox.style.aspectRatio = "640/788";
         } else if (selectedLayout === 'layoutG') {
-            maxPoses = 2;
+            maxPoses = 1;
             frameImg.src = 'frames/7.png';
             camBox.style.aspectRatio = "640/788";
-        } else if (selectedLayout === 'layoutI') {
-            maxPoses = 2;
-            frameImg.src = 'frames/7.png';
-            camBox.style.aspectRatio = "640/788";
+        } else if (selectedLayout === 'layoutH') {
+            maxPoses = 3;
+            frameImg.src = 'frames/8.png';
         } else {
             maxPoses = 3;
             frameImg.src = 'frames/1(2).png';
@@ -418,9 +417,9 @@
                 cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
             } else if (selectedLayout === 'layoutF') {
                 cfg = { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 };
-            } else if (selectedLayout === 'layoutI') {
-                cfg = { count: 2, photoW: 720, photoH: 560, startX: 40, startY: 70, gap: 120};
-            } else {
+            } else if (selectedLayout === 'layoutG') {
+                cfg = { photoW: 540, photoH: 668, startX: 400, startY: 480, gap: 0};
+            } else if (selectedLayout === 'layoutH') {
                 cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
             }
 

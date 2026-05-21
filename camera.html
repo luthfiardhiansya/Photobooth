@@ -4,305 +4,850 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photobooth Pro - Fixed Ratio</title>
+    <title>Timeless Booth - Camera</title>
     <style>
+        :root {
+            --bg: #f8fbff;
+            --surface: #ffffff;
+            --ink: #182033;
+            --muted: #6f7b90;
+            --line: #dfe8f7;
+            --blue: #4da3ff;
+            --coral: #ff6b6b;
+            --yellow: #ffd166;
+            --mint: #52d6a3;
+            --shadow: 0 22px 60px rgba(57, 89, 135, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
 
         body {
-            background: #F5EBE0;
-            color: #4E342E;
+            min-height: 100vh;
             margin: 0;
-            font-family: sans-serif;
+            color: var(--ink);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background:
+                radial-gradient(circle at 14% 8%, rgba(77, 163, 255, 0.2), transparent 26%),
+                radial-gradient(circle at 88% 16%, rgba(255, 209, 102, 0.28), transparent 24%),
+                radial-gradient(circle at 82% 82%, rgba(82, 214, 163, 0.22), transparent 28%),
+                var(--bg);
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            padding: 28px 16px 44px;
+            overflow-x: hidden;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 1120px;
+            min-width: 0;
+            display: grid;
+            grid-template-columns: minmax(280px, 470px) minmax(280px, 420px);
+            gap: 24px;
+            align-items: start;
+            animation: pageIn 0.55s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+        }
+
+        .stage,
+        .control-panel {
+            background: rgba(255, 255, 255, 0.88);
+            border: 1px solid rgba(223, 232, 247, 0.95);
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(18px);
+            min-width: 0;
+        }
+
+        .stage {
+            border-radius: 28px;
+            padding: 16px;
+            position: sticky;
+            top: 24px;
+        }
+
+        .topbar {
+            display: flex;
             align-items: center;
-            padding: 20px;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+
+        .brand-mark {
+            width: 40px;
+            height: 40px;
+            border-radius: 14px;
+            background:
+                linear-gradient(135deg, var(--blue), var(--mint)),
+                var(--blue);
+            box-shadow: 0 10px 24px rgba(77, 163, 255, 0.26);
+            position: relative;
+            flex: 0 0 auto;
+        }
+
+        .brand-mark::after {
+            content: "";
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            position: absolute;
+            inset: 9px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 1.02rem;
+            line-height: 1;
+            letter-spacing: 0;
+        }
+
+        .brand span {
+            display: block;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-top: 4px;
         }
 
         .pose-counter {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #6D4C41;
-            margin-bottom: 15px;
-            background: white;
-            padding: 8px 30px;
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 86px;
+            min-height: 40px;
+            padding: 8px 16px;
+            border-radius: 999px;
+            background: #fff7dd;
+            color: #8a5c00;
+            border: 1px solid rgba(255, 209, 102, 0.6);
+            font-weight: 900;
+            box-shadow: 0 10px 24px rgba(255, 209, 102, 0.22);
         }
 
         .cam-box {
             width: 100%;
-            max-width: 450px;
-            aspect-ratio: 4/3;
-            background: #000;
-            border-radius: 20px;
+            aspect-ratio: 4 / 3;
+            background: #0c111d;
+            border-radius: 24px;
             position: relative;
             overflow: hidden;
-            border: 6px solid white;
+            border: 8px solid #fff;
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18), 0 20px 42px rgba(24, 32, 51, 0.18);
+        }
+
+        .cam-box::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            z-index: 3;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(0deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+            background-size: 33.333% 33.333%;
+            opacity: 0.28;
         }
 
         #videoFeed,
-        #resultCanvas {
+        #resultCanvas,
+        #gifPreview {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            display: block;
         }
 
         #videoFeed {
             transform: scaleX(-1);
         }
 
-        #resultCanvas {
+        #resultCanvas,
+        #gifPreview {
             display: none;
-            background: white;
+            background: #fff;
+        }
+
+        #gifPreview {
+            object-fit: contain;
+            padding: 10px;
         }
 
         #countdown {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 80px;
-            color: white;
-            font-weight: 900;
-            z-index: 5;
-            text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            inset: 0;
             display: none;
+            place-items: center;
+            z-index: 6;
+            color: #fff;
+            font-size: clamp(5rem, 20vw, 9rem);
+            font-weight: 1000;
+            line-height: 1;
+            text-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+            background: radial-gradient(circle, rgba(24, 32, 51, 0.12), rgba(24, 32, 51, 0.38));
+        }
+
+        #countdown.pop {
+            animation: countdownPop 0.8s cubic-bezier(0.2, 0.95, 0.25, 1) both;
         }
 
         #flash {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: none;
-            z-index: 10;
+            inset: 0;
+            background: #fff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 8;
         }
 
-        .filter-container {
-            width: 100%;
-            max-width: 450px;
-            margin-top: 20px;
-            overflow-x: auto;
+        #flash.flash-on {
+            animation: flashBurst 0.22s ease-out both;
         }
 
-        .filter-bar {
+        .status-bar {
             display: flex;
-            gap: 10px;
-            padding: 10px;
-            width: max-content;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 800;
         }
 
-        .filter-item {
-            cursor: pointer;
-            text-align: center;
-            font-size: 10px;
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--mint);
+            box-shadow: 0 0 0 7px rgba(82, 214, 163, 0.16);
+            flex: 0 0 auto;
+            animation: pulseDot 1.8s ease-in-out infinite;
         }
 
-        .filter-dot {
-            width: 50px;
-            height: 50px;
-            border-radius: 10px;
-            border: 2px solid white;
-            margin-bottom: 5px;
-        }
-
-        .active .filter-dot {
-            border-color: #6D4C41;
-            transform: scale(1.1);
-        }
-
-        .controls {
-            margin-top: 20px;
+        .status-copy {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 10px;
-            width: 100%;
-            max-width: 320px;
+            min-width: 0;
         }
 
-        button {
-            padding: 15px;
-            border-radius: 50px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            text-transform: uppercase;
-        }
-
-        .btn-capture {
-            background: #6D4C41;
-            color: white;
-        }
-
-        .btn-download {
-            background: #6D4C41;
-            color: white;
-            display: none;
-        }
-
-        .btn-retake {
-            background: transparent;
-            border: 2px solid #6D4C41;
-            color: #6D4C41;
-            display: none;
+        #statusText {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         #loading {
             display: none;
-            font-weight: bold;
-            margin: 10px;
-            color: #6D4C41;
+            color: var(--blue);
+            font-weight: 900;
         }
 
-        .pixelated {
-            image-rendering: pixelated;
-            image-rendering: crisp-edges;
-            transform: scale(0.2);
-            width: 500% !important;
-            height: 500% !important;
+        .control-panel {
+            border-radius: 28px;
+            padding: 20px;
+        }
+
+        .panel-title {
+            margin: 0 0 18px;
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            line-height: 0.95;
+            letter-spacing: 0;
+        }
+
+        .setting-block {
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.72);
+            margin-bottom: 14px;
+            animation: floatIn 0.6s cubic-bezier(0.2, 0.95, 0.25, 1) both;
+        }
+
+        .setting-block:nth-of-type(2) {
+            animation-delay: 0.06s;
+        }
+
+        .setting-block:nth-of-type(3) {
+            animation-delay: 0.12s;
+        }
+
+        .setting-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 10px;
+            color: var(--muted);
+            font-size: 0.78rem;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .choice-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .choice-row.two {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        button {
+            font: inherit;
+        }
+
+        .option-btn,
+        .filter-item,
+        .btn-capture,
+        .btn-download,
+        .btn-retake {
+            border: 0;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .option-btn {
+            min-height: 46px;
+            border-radius: 16px;
+            background: #f4f8ff;
+            color: var(--ink);
+            border: 1px solid var(--line);
+            font-weight: 950;
+        }
+
+        .option-btn:hover,
+        .filter-item:hover,
+        .btn-capture:hover,
+        .btn-download:hover,
+        .btn-retake:hover {
+            transform: translateY(-2px);
+        }
+
+        .option-btn.active {
+            color: #fff;
+            background: linear-gradient(135deg, var(--blue), #7c65ff);
+            border-color: transparent;
+            box-shadow: 0 12px 24px rgba(77, 163, 255, 0.28);
+        }
+
+        .option-btn[data-mode="gif"].active {
+            background: linear-gradient(135deg, var(--coral), var(--yellow));
+            box-shadow: 0 12px 24px rgba(255, 107, 107, 0.24);
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.72;
+            transform: none;
+        }
+
+        .filter-container {
+            overflow-x: auto;
+            padding-bottom: 2px;
+            min-width: 0;
+        }
+
+        .filter-bar {
+            display: grid;
+            grid-auto-flow: column;
+            grid-auto-columns: 82px;
+            gap: 10px;
+            min-width: max-content;
+        }
+
+        .filter-item {
+            min-height: 88px;
+            border-radius: 18px;
+            background: #f7faff;
+            border: 1px solid var(--line);
+            color: var(--muted);
+            display: grid;
+            justify-items: center;
+            align-content: center;
+            gap: 7px;
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+
+        .filter-dot {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            border: 3px solid #fff;
+            box-shadow: 0 8px 18px rgba(57, 89, 135, 0.16);
+        }
+
+        .filter-item.active {
+            color: var(--ink);
+            background: #fff;
+            border-color: rgba(77, 163, 255, 0.55);
+            box-shadow: 0 12px 26px rgba(77, 163, 255, 0.16);
+        }
+
+        .filter-item.active .filter-dot {
+            transform: scale(1.08) rotate(-3deg);
+        }
+
+        .controls {
+            display: grid;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn-capture,
+        .btn-download,
+        .btn-retake {
+            width: 100%;
+            min-height: 56px;
+            border-radius: 18px;
+            font-weight: 1000;
+            text-transform: uppercase;
+            letter-spacing: 0;
+        }
+
+        .btn-capture {
+            color: #fff;
+            background: linear-gradient(135deg, var(--coral), var(--yellow));
+            box-shadow: 0 16px 30px rgba(255, 107, 107, 0.26);
+            animation: breathe 2.4s ease-in-out infinite;
+        }
+
+        .btn-capture:disabled {
+            cursor: wait;
+            opacity: 0.72;
+            transform: none;
+            animation: none;
+        }
+
+        .btn-download {
+            color: #fff;
+            background: linear-gradient(135deg, var(--blue), var(--mint));
+            box-shadow: 0 16px 30px rgba(77, 163, 255, 0.24);
+            display: none;
+        }
+
+        .btn-retake {
+            color: var(--ink);
+            background: #fff;
+            border: 1px solid var(--line);
+            display: none;
+        }
+
+        .is-hidden {
+            display: none !important;
+        }
+
+        #filterOverlay {
             position: absolute;
-            top: -200%;
-            left: -200%;
+            inset: 0;
+            pointer-events: none;
+            z-index: 2;
+            display: none;
+            mix-blend-mode: screen;
+            opacity: 0.5;
+            background: linear-gradient(45deg, #405de6, #833ab4, #fd1d1d, #fcaf45);
+        }
+
+        @keyframes pageIn {
+            from {
+                opacity: 0;
+                transform: translateY(18px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatIn {
+            from {
+                opacity: 0;
+                transform: translateY(16px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes countdownPop {
+            0% {
+                opacity: 0;
+                transform: scale(0.65);
+            }
+
+            24% {
+                opacity: 1;
+                transform: scale(1.08);
+            }
+
+            100% {
+                opacity: 1;
+                transform: scale(0.9);
+            }
+        }
+
+        @keyframes flashBurst {
+            0% {
+                opacity: 0;
+            }
+
+            36% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulseDot {
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(0.75);
+                opacity: 0.62;
+            }
+        }
+
+        @keyframes breathe {
+            0%,
+            100% {
+                box-shadow: 0 16px 30px rgba(255, 107, 107, 0.24);
+            }
+
+            50% {
+                box-shadow: 0 18px 42px rgba(255, 209, 102, 0.36);
+            }
+        }
+
+        @media (max-width: 900px) {
+            body {
+                padding: 16px 12px 32px;
+            }
+
+            .app-shell {
+                grid-template-columns: 1fr;
+            }
+
+            .stage {
+                position: static;
+            }
+
+            .panel-title {
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 520px) {
+            .stage,
+            .control-panel {
+                border-radius: 22px;
+                padding: 12px;
+            }
+
+            .cam-box {
+                border-width: 5px;
+                border-radius: 18px;
+            }
+
+            .choice-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .choice-row.two {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .filter-bar {
+                grid-auto-columns: 76px;
+            }
         }
     </style>
 </head>
 
 <body>
-
-    <div class="pose-counter" id="poseDisplay">0/0</div>
-
-    <div class="cam-box" id="camBox">
-        <div id="flash"></div>
-        <div id="countdown">3</div>
-        <div id="filterOverlay"
-            style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:2; display:none; mix-blend-mode: screen; opacity: 0.5; background: linear-gradient(45deg, #405de6, #833ab4, #fd1d1d, #fcaf45);">
-        </div>
-
-        <video id="videoFeed" autoplay playsinline></video>
-        <canvas id="resultCanvas"></canvas>
-    </div>
-    <div id="loading">✨ Memproses Gambar...</div>
-
-    <div class="filter-container" id="filterContainer">
-        <div class="filter-bar">
-            <div class="filter-item active" onclick="setFilter('none', this)">
-                <div class="filter-dot" style="background:#ddd"></div>
-                <span>Normal</span>
-            </div>
-
-            <div class="filter-item" onclick="setFilter('grayscale(100%)', this)">
-                <div class="filter-dot" style="background:#333"></div>
-                <span>B&W</span>
-            </div>
-
-            <div class="filter-item" onclick="setFilter('sepia(0.5) contrast(1.2)', this)">
-                <div class="filter-dot" style="background:#d2b48c"></div>
-                <span>Vintage</span>
-            </div>
-
-            <div class="filter-item" onclick="setFilter('saturate(1.8) contrast(1.1)', this)">
-                <div class="filter-dot" style="background:#e9967a"></div>
-                <span>Vivid</span>
-            </div>
-
-            <div class="filter-item" onclick="setFilter('sunset', this)">
-                <div class="filter-dot"
-                    style="background: linear-gradient(45deg, #405de6, #5851db, #833ab4, #c13584, #e1306c, #fd1d1d);">
+    <main class="app-shell">
+        <section class="stage" aria-label="Kamera photobooth">
+            <div class="topbar">
+                <div class="brand">
+                    <div class="brand-mark" aria-hidden="true"></div>
+                    <div>
+                        <h1>Timeless Booth</h1>
+                        <span id="modeBadge">Photo mode</span>
+                    </div>
                 </div>
-                <span>Rio de janeiro</span>
+                <div class="pose-counter" id="poseDisplay">0/0</div>
             </div>
 
-            <div class="filter-item" onclick="setFilter('lo-res', this)">
-                <div class="filter-dot"
-                    style="background: repeating-conic-gradient(#555 0% 25%, #888 0% 50%) 50% / 10px 10px;"></div>
-                <span>Lo-Res</span>
+            <div class="cam-box" id="camBox">
+                <div id="flash"></div>
+                <div id="countdown">3</div>
+                <div id="filterOverlay"></div>
+                <video id="videoFeed" autoplay playsinline></video>
+                <canvas id="resultCanvas"></canvas>
+                <img id="gifPreview" alt="Preview GIF">
             </div>
-        </div>
-    </div>
-    </div>
 
-    <div class="controls">
-        <button class="btn-capture" id="startBtn" onclick="startSequence()">Mulai Foto</button>
-        <button class="btn-download" id="dlBtn" onclick="downloadImage()">Download</button>
-        <button class="btn-retake" id="reBtn" onclick="location.reload()">Ulangi</button>
-    </div>
+            <div class="status-bar">
+                <div class="status-copy">
+                    <span class="status-dot" aria-hidden="true"></span>
+                    <span id="statusText">Kamera siap</span>
+                </div>
+                <div id="loading">Memproses...</div>
+            </div>
+        </section>
 
+        <section class="control-panel" aria-label="Pengaturan photobooth">
+            <h2 class="panel-title">Siapkan shot.</h2>
+
+            <div class="setting-block">
+                <div class="setting-label">
+                    <span>Jenis hasil</span>
+                </div>
+                <div class="choice-row two" id="modeOptions">
+                    <button class="option-btn active" type="button" data-mode="photo" onclick="selectOutputMode('photo', this)">Foto</button>
+                    <button class="option-btn" type="button" data-mode="gif" onclick="selectOutputMode('gif', this)">GIF</button>
+                </div>
+            </div>
+
+            <div class="setting-block">
+                <div class="setting-label">
+                    <span>Waktu per shoot</span>
+                </div>
+                <div class="choice-row" id="delayOptions">
+                    <button class="option-btn active" type="button" data-delay="3" onclick="selectDelay(3, this)">3s</button>
+                    <button class="option-btn" type="button" data-delay="5" onclick="selectDelay(5, this)">5s</button>
+                    <button class="option-btn" type="button" data-delay="7" onclick="selectDelay(7, this)">7s</button>
+                    <button class="option-btn" type="button" data-delay="manual" onclick="selectDelay('manual', this)">Manual</button>
+                </div>
+            </div>
+
+            <div class="setting-block" id="filterContainer">
+                <div class="setting-label">
+                    <span>Filter</span>
+                </div>
+                <div class="filter-container">
+                    <div class="filter-bar">
+                        <button class="filter-item active" type="button" onclick="setFilter('none', this)">
+                            <span class="filter-dot" style="background:#e7edf7"></span>
+                            <span>Normal</span>
+                        </button>
+
+                        <button class="filter-item" type="button" onclick="setFilter('grayscale(100%)', this)">
+                            <span class="filter-dot" style="background:#2f3544"></span>
+                            <span>B&amp;W</span>
+                        </button>
+
+                        <button class="filter-item" type="button" onclick="setFilter('sepia(0.5) contrast(1.2)', this)">
+                            <span class="filter-dot" style="background:#d7b488"></span>
+                            <span>Vintage</span>
+                        </button>
+
+                        <button class="filter-item" type="button" onclick="setFilter('saturate(1.8) contrast(1.1)', this)">
+                            <span class="filter-dot" style="background:#ff8b7b"></span>
+                            <span>Vivid</span>
+                        </button>
+
+                        <button class="filter-item" type="button" onclick="setFilter('sunset', this)">
+                            <span class="filter-dot" style="background:linear-gradient(45deg,#405de6,#833ab4,#fd1d1d,#fcaf45)"></span>
+                            <span>Rio</span>
+                        </button>
+
+                        <button class="filter-item" type="button" onclick="setFilter('lo-res', this)">
+                            <span class="filter-dot" style="background:repeating-conic-gradient(#5d6b7d 0% 25%,#aeb9c8 0% 50%) 50% / 10px 10px"></span>
+                            <span>Lo-Res</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="btn-capture" id="startBtn" type="button" onclick="handleCaptureButton()">Mulai Foto</button>
+                <button class="btn-download" id="dlBtn" type="button" onclick="downloadResult()">Download Foto</button>
+                <button class="btn-retake" id="reBtn" type="button" onclick="location.reload()">Ulangi</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="vendor/gifshot.min.js"></script>
+    <script>
+        if (typeof gifshot === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"><\\/script>');
+        }
+    </script>
     <script>
         const video = document.getElementById('videoFeed');
         const canvas = document.getElementById('resultCanvas');
         const ctx = canvas.getContext('2d');
         const countdownEl = document.getElementById('countdown');
         const startBtn = document.getElementById('startBtn');
+        const dlBtn = document.getElementById('dlBtn');
+        const reBtn = document.getElementById('reBtn');
         const loading = document.getElementById('loading');
+        const statusText = document.getElementById('statusText');
+        const modeBadge = document.getElementById('modeBadge');
+        const gifPreview = document.getElementById('gifPreview');
+        const camBox = document.getElementById('camBox');
+        const filterContainer = document.getElementById('filterContainer');
+        const frameImg = new Image();
+
+        const selectedLayout = localStorage.getItem('selectedLayout') || 'layoutA';
+        const layouts = {
+            layoutA: {
+                poses: 3,
+                frame: 'frames/1(2).png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 }
+            },
+            layoutB: {
+                poses: 4,
+                frame: 'frames/2.png',
+                composite: { photoW: 710, photoH: 458, startX: 45, startY: 51, gap: 80 }
+            },
+            layoutC: {
+                poses: 3,
+                frame: 'frames/3.png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 }
+            },
+            layoutD: {
+                poses: 3,
+                frame: 'frames/4.png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 }
+            },
+            layoutE: {
+                poses: 3,
+                frame: 'frames/5.png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 }
+            },
+            layoutF: {
+                poses: 2,
+                frame: 'frames/6.png',
+                previewRatio: '640 / 788',
+                composite: { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 }
+            },
+            layoutG: {
+                poses: 1,
+                frame: 'frames/7.png',
+                previewRatio: '640 / 788',
+                composite: { photoW: 540, photoH: 668, startX: 400, startY: 480, gap: 0 }
+            },
+            layoutH: {
+                poses: 3,
+                frame: 'frames/8.png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 60, gap: 75 }
+            },
+            layoutI: {
+                poses: 3,
+                frame: 'frames/9.png',
+                previewRatio: '640 / 700',
+                composite: { photoW: 640, photoH: 700, startX: 55, startY: 70, gap: 60 }
+            },
+            layoutJ: {
+                poses: 3,
+                frame: 'frames/10.png',
+                composite: { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 }
+            }
+        };
+
+        const activeLayout = layouts[selectedLayout] || layouts.layoutA;
+        const maxPoses = activeLayout.poses;
 
         let photos = [];
         let currentFilter = 'none';
+        let selectedDelay = 3;
+        let outputMode = 'photo';
+        let sessionStarted = false;
+        let isBusy = false;
+        let gifDataUrl = '';
 
-        const selectedLayout = localStorage.getItem('selectedLayout') || 'layoutA';
-        const camBox = document.getElementById('camBox');
-
-        let maxPoses = 3;
-        const frameImg = new Image();
-
-        if (selectedLayout === 'layoutB') {
-            maxPoses = 4;
-            frameImg.src = 'frames/2.png';
-        } else if (selectedLayout === 'layoutC') {
-            maxPoses = 3;
-            frameImg.src = 'frames/3.png';
-        } else if (selectedLayout === 'layoutD') {
-            maxPoses = 3;
-            frameImg.src = 'frames/4.png'; 
-        } else if (selectedLayout === 'layoutE') {
-            maxPoses = 3;
-            frameImg.src = 'frames/5.png'; 
-        } else if (selectedLayout === 'layoutF') {
-            maxPoses = 2;
-            frameImg.src = 'frames/6.png';
-            camBox.style.aspectRatio = "640/788";
-        } else if (selectedLayout === 'layoutG') {
-            maxPoses = 1;
-            frameImg.src = 'frames/7.png';
-            camBox.style.aspectRatio = "640/788";
-        } else if (selectedLayout === 'layoutH') {
-            maxPoses = 3;
-            frameImg.src = 'frames/8.png';
-        } else {
-            maxPoses = 3;
-            frameImg.src = 'frames/1(2).png';
-        }
-
-        document.getElementById('poseDisplay').innerText = `0/${maxPoses}`;
+        frameImg.src = activeLayout.frame;
+        if (activeLayout.previewRatio) camBox.style.aspectRatio = activeLayout.previewRatio;
+        updatePoseDisplay(0);
+        updateStartLabel();
 
         async function initCamera() {
             try {
                 const stream = await navigator.mediaDevices.getUserMedia({
-                    video: { width: 1280, height: 960 }, audio: false
+                    video: { width: 1280, height: 960 },
+                    audio: false
                 });
                 video.srcObject = stream;
-            } catch (err) { alert("Kamera error!"); }
+                statusText.innerText = 'Kamera siap';
+            } catch (err) {
+                statusText.innerText = 'Kamera tidak bisa dibuka';
+                alert('Kamera error! Pastikan izin kamera sudah aktif.');
+            }
+        }
+
+        function selectDelay(delay, el) {
+            if (sessionStarted) return;
+            selectedDelay = delay;
+            document.querySelectorAll('#delayOptions .option-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            updateStartLabel();
+            statusText.innerText = delay === 'manual' ? 'Manual siap' : `Auto ${delay} detik`;
+        }
+
+        function selectOutputMode(mode, el) {
+            if (sessionStarted) return;
+            outputMode = mode;
+            document.querySelectorAll('#modeOptions .option-btn').forEach(btn => btn.classList.remove('active'));
+            el.classList.add('active');
+            modeBadge.innerText = mode === 'gif' ? 'GIF mode' : 'Photo mode';
+            updateStartLabel();
+        }
+
+        function setOptionsLocked(locked) {
+            document.querySelectorAll('#delayOptions .option-btn, #modeOptions .option-btn').forEach(btn => {
+                btn.disabled = locked;
+            });
+        }
+
+        function updatePoseDisplay(done) {
+            document.getElementById('poseDisplay').innerText = `${done}/${maxPoses}`;
+        }
+
+        function updateStartLabel() {
+            if (selectedDelay === 'manual') {
+                startBtn.innerText = `Foto Frame ${photos.length + 1}`;
+                return;
+            }
+            startBtn.innerText = outputMode === 'gif' ? 'Mulai GIF' : 'Mulai Foto';
         }
 
         function setFilter(filter, el) {
             const overlay = document.getElementById('filterOverlay');
 
             video.style.filter = 'none';
-            video.style.imageRendering = 'auto'; 
+            video.style.imageRendering = 'auto';
             overlay.style.display = 'none';
 
             if (filter === 'sunset') {
                 video.style.filter = 'contrast(1.2) saturate(1.5)';
                 overlay.style.display = 'block';
                 currentFilter = 'sunset';
-            }
-            else if (filter === 'lo-res') {
+            } else if (filter === 'lo-res') {
                 video.style.imageRendering = 'pixelated';
                 video.style.filter = 'contrast(1.1) brightness(1.1)';
                 currentFilter = 'lo-res';
-            }
-            else {
+            } else {
                 currentFilter = filter;
                 video.style.filter = filter;
             }
@@ -311,66 +856,135 @@
             el.classList.add('active');
         }
 
-        async function startSequence() {
-            startBtn.style.display = 'none';
-            document.getElementById('filterContainer').style.display = 'none';
-            photos = [];
-            for (let i = 1; i <= maxPoses; i++) {
-                document.getElementById('poseDisplay').innerText = `${i}/${maxPoses}`;
-                await runCountdown(3);
-                capture();
-                await new Promise(r => setTimeout(r, 600));
+        async function handleCaptureButton() {
+            if (isBusy) return;
+            if (selectedDelay === 'manual') {
+                await captureManualFrame();
+            } else {
+                await startAutoSequence();
             }
-            showResult();
+        }
+
+        async function startAutoSequence() {
+            sessionStarted = true;
+            isBusy = true;
+            photos = [];
+            gifDataUrl = '';
+            setOptionsLocked(true);
+            filterContainer.classList.add('is-hidden');
+            startBtn.disabled = true;
+            startBtn.innerText = 'Berjalan...';
+
+            for (let i = 1; i <= maxPoses; i++) {
+                statusText.innerText = `Frame ${i} dari ${maxPoses}`;
+                updatePoseDisplay(i - 1);
+                await runCountdown(Number(selectedDelay));
+                capture();
+                updatePoseDisplay(i);
+                await wait(520);
+            }
+
+            await finishSession();
+        }
+
+        async function captureManualFrame() {
+            if (photos.length >= maxPoses) return;
+            sessionStarted = true;
+            isBusy = true;
+            gifDataUrl = '';
+            setOptionsLocked(true);
+            startBtn.disabled = true;
+
+            const frameNumber = photos.length + 1;
+            statusText.innerText = `Frame ${frameNumber} dari ${maxPoses}`;
+            updatePoseDisplay(photos.length);
+            await runCountdown(3);
+            capture();
+            updatePoseDisplay(photos.length);
+            await wait(320);
+
+            if (photos.length >= maxPoses) {
+                await finishSession();
+                return;
+            }
+
+            isBusy = false;
+            startBtn.disabled = false;
+            updateStartLabel();
+            statusText.innerText = `Frame ${photos.length + 1} siap`;
+        }
+
+        async function finishSession() {
+            isBusy = true;
+            startBtn.style.display = 'none';
+            filterContainer.classList.add('is-hidden');
+            loading.style.display = 'block';
+            statusText.innerText = outputMode === 'gif' ? 'Membuat GIF' : 'Menyusun foto';
+
+            await showResult();
+
+            loading.style.display = 'none';
+            dlBtn.style.display = 'block';
+            reBtn.style.display = 'block';
+            isBusy = false;
         }
 
         function runCountdown(sec) {
             return new Promise(resolve => {
                 let count = sec;
-                countdownEl.style.display = 'block';
-                countdownEl.innerText = count;
+                countdownEl.style.display = 'grid';
+                paintCountdown(count);
+
                 const timer = setInterval(() => {
                     count--;
-                    if (count <= 0) { clearInterval(timer); countdownEl.style.display = 'none'; resolve(); }
-                    else { countdownEl.innerText = count; }
+                    if (count <= 0) {
+                        clearInterval(timer);
+                        countdownEl.style.display = 'none';
+                        resolve();
+                    } else {
+                        paintCountdown(count);
+                    }
                 }, 1000);
             });
         }
 
+        function paintCountdown(value) {
+            countdownEl.innerText = value;
+            countdownEl.classList.remove('pop');
+            void countdownEl.offsetWidth;
+            countdownEl.classList.add('pop');
+        }
+
         function capture() {
             const flash = document.getElementById('flash');
-            flash.style.display = 'block';
-            setTimeout(() => flash.style.display = 'none', 100);
+            flash.classList.remove('flash-on');
+            void flash.offsetWidth;
+            flash.classList.add('flash-on');
 
-            const vW = video.videoWidth;
-            const vH = video.videoHeight;
-
+            const vW = video.videoWidth || 1280;
+            const vH = video.videoHeight || 960;
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = vW;
             tempCanvas.height = vH;
             const tempCtx = tempCanvas.getContext('2d');
 
             if (currentFilter === 'lo-res') {
-                const scale = 10000;
-                const sw = Math.floor(vW * scale);
-                const sh = Math.floor(vH * scale);
-
+                const pixelW = 160;
+                const pixelH = Math.max(1, Math.round(pixelW * (vH / vW)));
                 const smallCanvas = document.createElement('canvas');
-                smallCanvas.width = sw;
-                smallCanvas.height = sh;
+                smallCanvas.width = pixelW;
+                smallCanvas.height = pixelH;
                 const smallCtx = smallCanvas.getContext('2d');
 
-                smallCtx.translate(sw, 0);
+                smallCtx.filter = 'contrast(1.15) brightness(1.08)';
+                smallCtx.translate(pixelW, 0);
                 smallCtx.scale(-1, 1);
-                smallCtx.drawImage(video, 0, 0, sw, sh);
+                smallCtx.drawImage(video, 0, 0, pixelW, pixelH);
 
                 tempCtx.imageSmoothingEnabled = false;
-                tempCtx.drawImage(smallCanvas, 0, 0, sw, sh, 0, 0, vW, vH);
-
-                tempCtx.filter = 'contrast(1.2) brightness(1.1)';
-            }
-            else {
-                tempCtx.filter = (currentFilter === 'sunset') ? 'contrast(1.2) saturate(1.5)' : currentFilter;
+                tempCtx.drawImage(smallCanvas, 0, 0, pixelW, pixelH, 0, 0, vW, vH);
+            } else {
+                tempCtx.filter = currentFilter === 'sunset' ? 'contrast(1.2) saturate(1.5)' : currentFilter;
                 tempCtx.save();
                 tempCtx.translate(vW, 0);
                 tempCtx.scale(-1, 1);
@@ -389,83 +1003,167 @@
                 }
             }
 
-            photos.push(tempCanvas.toDataURL('image/jpeg', 0.9));
+            photos.push(tempCanvas.toDataURL('image/jpeg', 0.92));
         }
+
         async function showResult() {
-            loading.style.display = 'block';
             video.style.display = 'none';
             canvas.style.display = 'block';
+            gifPreview.style.display = 'none';
 
-            await frameImg.decode();
+            await drawPhotoStrip();
 
-            if (selectedLayout === 'layoutG') {
-                canvas.width = 1080; 
-                canvas.height = 1920;
+            if (outputMode === 'gif') {
+                dlBtn.innerText = 'Download GIF';
+                try {
+                    gifDataUrl = await createGif();
+                    gifPreview.src = gifDataUrl;
+                    canvas.style.display = 'none';
+                    gifPreview.style.display = 'block';
+                    statusText.innerText = 'GIF siap';
+                } catch (err) {
+                    dlBtn.innerText = 'Download Foto';
+                    statusText.innerText = 'GIF gagal, foto siap';
+                    outputMode = 'photo';
+                }
             } else {
-                canvas.width = 800;   
-                canvas.height = 2400;
+                dlBtn.innerText = 'Download Foto';
+                statusText.innerText = 'Foto siap';
             }
+        }
 
-            let cfg;
-            if (selectedLayout === 'layoutB') {
-                cfg = { photoW: 710, photoH: 447, startX: 45, startY: 54, gap: 90 };
-            } else if (selectedLayout === 'layoutC') {
-                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
-            } else if (selectedLayout === 'layoutD') {
-                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
-            } else if (selectedLayout === 'layoutE') {
-                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
-            } else if (selectedLayout === 'layoutF') {
-                cfg = { photoW: 640, photoH: 788, startX: 80, startY: 290, gap: 193 };
-            } else if (selectedLayout === 'layoutG') {
-                cfg = { photoW: 540, photoH: 668, startX: 400, startY: 480, gap: 0};
-            } else if (selectedLayout === 'layoutH') {
-                cfg = { photoW: 710, photoH: 549, startX: 43, startY: 50, gap: 190 };
-            }
+        async function drawPhotoStrip() {
+            await decodeImage(frameImg);
+            const cfg = activeLayout.composite;
+
+            canvas.width = frameImg.naturalWidth || 800;
+            canvas.height = frameImg.naturalHeight || 2400;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
             for (let i = 0; i < photos.length; i++) {
-                const img = new Image();
-                img.src = photos[i];
-                await new Promise(resolve => {
-                    img.onload = () => {
-                        const yPos = cfg.startY + (i * (cfg.photoH + cfg.gap));
-
-                        let sourceWidth = img.width;
-                        let sourceHeight = img.height;
-                        let targetRatio = cfg.photoW / cfg.photoH;
-                        let sourceRatio = sourceWidth / sourceHeight;
-
-                        let sX, sY, sW, sH;
-
-                        if (sourceRatio > targetRatio) {
-                            sW = sourceHeight * targetRatio;
-                            sH = sourceHeight;
-                            sX = (sourceWidth - sW) / 2;
-                            sY = 0;
-                        } else {
-                            sW = sourceWidth;
-                            sH = sourceWidth / targetRatio;
-                            sX = 0;
-                            sY = (sourceHeight - sH) / 2;
-                        }
-
-                        ctx.drawImage(img, sX, sY, sW, sH, cfg.startX, yPos, cfg.photoW, cfg.photoH);
-                        resolve();
-                    }
-                });
+                const img = await loadImage(photos[i]);
+                const yPos = cfg.startY + (i * (cfg.photoH + cfg.gap));
+                drawCoverImage(ctx, img, cfg.startX, yPos, cfg.photoW, cfg.photoH);
             }
 
             ctx.drawImage(frameImg, 0, 0, canvas.width, canvas.height);
-            loading.style.display = 'none';
-            document.getElementById('dlBtn').style.display = 'block';
-            document.getElementById('reBtn').style.display = 'block';
         }
 
-        function downloadImage() {
+        async function createGif() {
+            await waitForGifshot();
+
+            const frames = [];
+            for (const photo of photos) {
+                frames.push(await normalizeGifFrame(photo));
+            }
+            if (frames.length === 1) frames.push(frames[0]);
+
+            return new Promise((resolve, reject) => {
+                gifshot.createGIF({
+                    images: frames,
+                    gifWidth: 480,
+                    gifHeight: 360,
+                    interval: 0.55,
+                    numFrames: frames.length,
+                    sampleInterval: 12,
+                    numWorkers: 2
+                }, function (obj) {
+                    if (!obj.error) {
+                        resolve(obj.image);
+                    } else {
+                        reject(obj.error);
+                    }
+                });
+            });
+        }
+
+        function waitForGifshot() {
+            return new Promise((resolve, reject) => {
+                const startedAt = Date.now();
+                const timer = setInterval(() => {
+                    if (typeof gifshot !== 'undefined') {
+                        clearInterval(timer);
+                        resolve();
+                    } else if (Date.now() - startedAt > 7000) {
+                        clearInterval(timer);
+                        reject(new Error('gifshot unavailable'));
+                    }
+                }, 120);
+            });
+        }
+
+        async function normalizeGifFrame(src) {
+            const img = await loadImage(src);
+            const gifCanvas = document.createElement('canvas');
+            gifCanvas.width = 480;
+            gifCanvas.height = 360;
+            const gifCtx = gifCanvas.getContext('2d');
+            gifCtx.fillStyle = '#ffffff';
+            gifCtx.fillRect(0, 0, gifCanvas.width, gifCanvas.height);
+            drawCoverImage(gifCtx, img, 0, 0, gifCanvas.width, gifCanvas.height);
+            return gifCanvas.toDataURL('image/jpeg', 0.9);
+        }
+
+        function drawCoverImage(targetCtx, img, dx, dy, dw, dh) {
+            const imgRatio = img.width / img.height;
+            const targetRatio = dw / dh;
+            let sx = 0;
+            let sy = 0;
+            let sw = img.width;
+            let sh = img.height;
+
+            if (imgRatio > targetRatio) {
+                sw = img.height * targetRatio;
+                sx = (img.width - sw) / 2;
+            } else {
+                sh = img.width / targetRatio;
+                sy = (img.height - sh) / 2;
+            }
+
+            targetCtx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => resolve(img);
+                img.onerror = reject;
+                img.src = src;
+            });
+        }
+
+        async function decodeImage(img) {
+            if (img.complete && img.naturalWidth) return;
+            if (img.decode) {
+                try {
+                    await img.decode();
+                    return;
+                } catch (err) { }
+            }
+            await new Promise((resolve, reject) => {
+                img.onload = resolve;
+                img.onerror = reject;
+            });
+        }
+
+        function downloadResult() {
             const link = document.createElement('a');
-            link.download = `photobooth_${Date.now()}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 1.0);
+
+            if (outputMode === 'gif' && gifDataUrl) {
+                link.download = `photobooth_${Date.now()}.gif`;
+                link.href = gifDataUrl;
+            } else {
+                link.download = `photobooth_${Date.now()}.jpg`;
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+            }
+
             link.click();
+        }
+
+        function wait(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
         }
 
         window.onload = initCamera;

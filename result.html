@@ -150,7 +150,12 @@
         <button class="btn-retake" onclick="window.location.href='index.html'">Take Another One</button>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.4.5/gifshot.min.js"></script>
+    <script src="vendor/gifshot.min.js"></script>
+    <script>
+        if (typeof gifshot === 'undefined') {
+            document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"><\\/script>');
+        }
+    </script>
 
     <script>
         const canvas = document.getElementById('finalCanvas');
